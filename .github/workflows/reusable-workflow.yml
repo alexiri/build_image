@@ -112,7 +112,7 @@ jobs:
         env:
           IMAGE_TAG: ${{ env.WORKING_TAG }}-${{ matrix.platform }}
         run: |
-          podman build \
+          sudo podman build \
             --security-opt=label=disable \
             --cap-add=all \
             --device /dev/fuse \
