@@ -76,7 +76,7 @@ jobs:
         id: build
         shell: bash
         run: |
-          podman build \
+          sudo podman build \
             --security-opt=label=disable \
             --cap-add=all \
             --device /dev/fuse \
