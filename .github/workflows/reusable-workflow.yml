@@ -37,8 +37,10 @@ on:
         type: string
         default: "${{ github.event.repository.html_url }}"
       REGISTRY_USER:
-          description: "The username to use for the registry"
-          required: true
+        description: "The username to use for the registry"
+        required: false
+        type: string
+        default: "${{ github.actor }}"
     outputs:
       image-ref:
         description: "The image reference of the built image"
