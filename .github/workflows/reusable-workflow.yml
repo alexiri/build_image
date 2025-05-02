@@ -14,7 +14,7 @@ on:
         description: "The registry to push the image to"
         required: false
         type: string
-        default: "ghcr.io/"
+        default: "ghcr.io"
       image-path:
         description: "The path to the image in the registry"
         required: false
