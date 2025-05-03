@@ -433,7 +433,7 @@ jobs:
           echo "DIGEST=$DIGEST" >> $GITHUB_OUTPUT
           echo "IMAGE=$IMAGE_REF" >> $GITHUB_OUTPUT
 
-          INSPECT=$(sudo podman image inspect $IMAGE_REF@$DIGEST
+          INSPECT=$(sudo podman image inspect $IMAGE_REF@$DIGEST)
           echo "redhat-id=$(echo "$INSPECT" | jq -r '.[0].Labels["redhat.id"]')" >> $GITHUB_OUTPUT
           echo "redhat-version-id=$(echo "$INSPECT" | jq -r '.[0].Labels["redhat.version-id"]')" >> $GITHUB_OUTPUT
           echo "version=$(echo "$INSPECT" | jq -r '.[0].Labels["org.opencontainers.image.version"]')" >> $GITHUB_OUTPUT
