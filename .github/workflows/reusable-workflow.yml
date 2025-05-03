@@ -135,6 +135,9 @@ jobs:
             -f ${{ env.CONTAINERFILE }} \
             .
 
+          sudo podman image inspect ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          sudo podman run --rm ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} cat /etc/os-release
+
       - name: Setup Syft
         id: setup-syft
         if: github.event_name != 'pull_request'
