@@ -183,10 +183,11 @@ jobs:
 
           IMAGE=${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           IMAGE_DIGEST=$(podman image inspect --format '{{.Digest}}' $IMAGE)
-          VERSION_ID=$(podman image inspect --format '{{.Labels["redhat.version-id"]}}' $IMAGE)
+          #VERSION_ID=$(podman image inspect --format '{{.Labels["redhat.version-id"]}}' $IMAGE)
           echo "image=$IMAGE" >> $GITHUB_OUTPUT
           echo "digest=$IMAGE_DIGEST" >> $GITHUB_OUTPUT
-          echo "version-id=$VERSION_ID" >> $GITHUB_OUTPUT
+          #echo "version-id=$VERSION_ID" >> $GITHUB_OUTPUT
+          podman image inspect $IMAGE | jq .
 
       # Push the image to GHCR (Image Registry)
       - name: Push to registry
