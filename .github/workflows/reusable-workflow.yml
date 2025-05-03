@@ -204,7 +204,8 @@ jobs:
           sudo rm -rf ${{ steps.rechunk.outputs.location }}
           podman image tag $IMAGE ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-          INSPECT=$(sudo podman image inspect ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }})
+          IMAGE=${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          INSPECT=$(sudo podman image inspect $IMAGE)
           echo "image=$IMAGE" >> $GITHUB_OUTPUT
           echo "digest=$(echo "$INSPECT" | jq -r '.[0].Digest')" >> $GITHUB_OUTPUT
           echo "redhat-id=$(echo "$INSPECT" | jq -r '.[0].Labels["redhat.id"]')" >> $GITHUB_OUTPUT
