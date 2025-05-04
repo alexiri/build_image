@@ -78,6 +78,7 @@ env:
   WORKING_TAG: "run-${{ github.run_number }}"
   IMAGE_REGISTRY: ${{ inputs.image-registry }}
   IMAGE_PATH: ${{ inputs.image-path }}
+  SIGNING_ENABLED: ${{ secrets.SIGNING_SECRET != '' }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}-${{ inputs.image-name }}
@@ -118,9 +119,6 @@ jobs:
     outputs:
       image-ref: ${{ steps.push.outputs.image-ref }}
       digest: ${{ steps.push.outputs.digest }}
-
-    env:
-      SIGNING_ENABLED: ${{ secrets.SIGNING_SECRET != '' }}
 
     steps:
       - name: Login to Container Registry
@@ -490,14 +488,17 @@ jobs:
       id-token: write
     steps:
       - name: Login to Container Registry
+        if: ${{ env.SIGNING_ENABLED }}
         run: |
           echo ${{ secrets.REGISTRY_TOKEN }} | podman login -u ${{ inputs.REGISTRY_USER }} --password-stdin ${{ env.IMAGE_REGISTRY }}
           echo ${{ secrets.REGISTRY_TOKEN }} | docker login -u ${{ inputs.REGISTRY_USER }} --password-stdin ${{ env.IMAGE_REGISTRY }}
 
       - name: Install Cosign
+        if: ${{ env.SIGNING_ENABLED }}
         uses: sigstore/cosign-installer@3454372f43399081ed03b604cb2d021dabca52bb # v3.8.2
 
       - name: Sign Manifest
+        if: ${{ env.SIGNING_ENABLED }}
         env:
           DIGEST: ${{ needs.manifest.outputs.digest }}
           IMAGE: ${{ needs.manifest.outputs.image }}
