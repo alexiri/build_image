@@ -332,6 +332,7 @@ jobs:
       image: ${{ steps.push_manifest.outputs.image }}
       digest: ${{ steps.push_manifest.outputs.digest }}
       image-id: ${{ steps.push_manifest.outputs.image-id }}
+      signing-enabled: ${{ env.SIGNING_ENABLED}}
     steps:
       - name: Install dependencies
         run: |
@@ -480,7 +481,7 @@ jobs:
   # so we move this to another step in order to run on Ubuntu
   sign:
     needs: manifest
-    if: github.event_name != 'pull_request'
+    if: ${{ github.event_name != 'pull_request' && needs.manifest.outputs.signing-enabled == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -488,17 +489,14 @@ jobs:
       id-token: write
     steps:
       - name: Login to Container Registry
-        if: ${{ env.SIGNING_ENABLED }} == true
         run: |
           echo ${{ secrets.REGISTRY_TOKEN }} | podman login -u ${{ inputs.REGISTRY_USER }} --password-stdin ${{ env.IMAGE_REGISTRY }}
           echo ${{ secrets.REGISTRY_TOKEN }} | docker login -u ${{ inputs.REGISTRY_USER }} --password-stdin ${{ env.IMAGE_REGISTRY }}
 
       - name: Install Cosign
-        if: ${{ env.SIGNING_ENABLED }} == true
         uses: sigstore/cosign-installer@3454372f43399081ed03b604cb2d021dabca52bb # v3.8.2
 
       - name: Sign Manifest
-        if: ${{ env.SIGNING_ENABLED }} == true
         env:
           DIGEST: ${{ needs.manifest.outputs.digest }}
           IMAGE: ${{ needs.manifest.outputs.image }}
