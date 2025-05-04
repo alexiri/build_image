@@ -152,6 +152,9 @@ jobs:
             -f ${{ env.CONTAINERFILE }} \
             .
 
+          echo -n "image-id="
+          cat /tmp/image-id
+
           echo "image-id=$(cat /tmp/image-id)" >> $GITHUB_OUTPUT
           echo "date=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)" >> $GITHUB_OUTPUT
           sudo podman image inspect ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} | jq .
@@ -162,7 +165,7 @@ jobs:
         env:
           IMAGE_ID: ${{ steps.build.outputs.image-id }}
         run: |
-          INSPECT=$(sudo podman image inspect ${{ env.IMAGE_ID }}
+          INSPECT=$(sudo podman image inspect ${{ env.IMAGE_ID }} )
           echo "redhat-id=$(echo "$INSPECT" | jq -r '.[0].Labels["redhat.id"]')" >> $GITHUB_OUTPUT
           echo "redhat-version-id=$(echo "$INSPECT" | jq -r '.[0].Labels["redhat.version-id"]')" >> $GITHUB_OUTPUT
           echo "version=$(echo "$INSPECT" | jq -r '.[0].Labels["org.opencontainers.image.version"]')" >> $GITHUB_OUTPUT
