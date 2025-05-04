@@ -52,6 +52,9 @@ on:
       digest:
         description: "The digest of the built image"
         value: ${{ jobs.manifest.outputs.digest }}
+      image-id:
+        description: "The image ID of the built image"
+        value: ${{ jobs.manifest.outputs.image-id }}
       # version:
       #   description: "The version of the built image"
       #   value: ${{ jobs.manifest.outputs.version }}
@@ -326,8 +329,9 @@ jobs:
       packages: write
       id-token: write
     outputs:
-      image: ${{ steps.push_manifest.outputs.IMAGE }}
-      digest: ${{ steps.push_manifest.outputs.DIGEST }}
+      image: ${{ steps.push_manifest.outputs.image }}
+      digest: ${{ steps.push_manifest.outputs.digest }}
+      image-id: ${{ steps.push_manifest.outputs.image-id }}
     steps:
       - name: Install dependencies
         run: |
@@ -463,9 +467,14 @@ jobs:
           done <<< "$TAGS"
 
           DIGEST=$(cat /tmp/digestfile)
-          echo "DIGEST=$DIGEST" >> $GITHUB_OUTPUT
-          echo "IMAGE=$IMAGE_REF" >> $GITHUB_OUTPUT
+          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+          echo "image=$IMAGE_REF" >> $GITHUB_OUTPUT
+
+          INSPECT=$(podman manifest inspect $IMAGE_REF)
+          echo "image-id=$(echo "$INSPECT" | jq -r '("sha256:" + .[0].Id)'" >> $GITHUB_OUTPUT
+
           echo "Pushed manifest to $IMAGE_REF with digest $DIGEST"
+          echo $INSPECT | jq .
 
   # Cosign throws errors when ran inside the Fedora container for one reason or another
   # so we move this to another step in order to run on Ubuntu
