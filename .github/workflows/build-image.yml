@@ -160,14 +160,14 @@ jobs:
         id: check
         shell: bash
         env:
-          IMAGE_TAG: ${{ env.WORKING_TAG }}-${{ matrix.platform }}
+          IMAGE_ID: ${{ steps.build.outputs.image-id }}
         run: |
-          INSPECT=$(sudo podman image inspect ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }})
+          INSPECT=$(sudo podman image inspect ${{ env.IMAGE_ID }}
           echo "redhat-id=$(echo "$INSPECT" | jq -r '.[0].Labels["redhat.id"]')" >> $GITHUB_OUTPUT
           echo "redhat-version-id=$(echo "$INSPECT" | jq -r '.[0].Labels["redhat.version-id"]')" >> $GITHUB_OUTPUT
           echo "version=$(echo "$INSPECT" | jq -r '.[0].Labels["org.opencontainers.image.version"]')" >> $GITHUB_OUTPUT
 
-          sudo podman run --rm ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} cat /etc/os-release
+          sudo podman run --rm ${{ env.IMAGE_ID }} cat /etc/os-release
 
       - name: Setup Syft
         id: setup-syft
@@ -178,26 +178,23 @@ jobs:
         id: generate-sbom
         if: github.event_name != 'pull_request'
         env:
-          IMAGE: ${{ env.IMAGE_NAME }}
-          IMAGE_TAG: ${{ env.WORKING_TAG }}-${{ matrix.platform }}
+          IMAGE_ID: ${{ steps.build.outputs.image-id }}
           SYFT_CMD: ${{ steps.setup-syft.outputs.cmd }}
         run: |
           sudo systemctl start podman.socket
 
           OUTPUT_PATH="$(mktemp -d)/sbom.json"
           export SYFT_PARALLELISM=$(($(nproc)*2))
-          sudo $SYFT_CMD ${IMAGE}:${IMAGE_TAG} -o spdx-json=${OUTPUT_PATH}
+          sudo $SYFT_CMD ${IMAGE_ID} -o spdx-json=${OUTPUT_PATH}
           echo "OUTPUT_PATH=${OUTPUT_PATH}" >> $GITHUB_OUTPUT
 
       - name: Run Rechunker
         if: github.event_name != 'pull_request'
         id: rechunk
         uses: hhd-dev/rechunk@ca77507401f8700bb0b25ebecbbf980a078cd180 # v1.2.2
-        env:
-          IMAGE_TAG: ${{ env.WORKING_TAG }}-${{ matrix.platform }}
         with:
           rechunk: "ghcr.io/hhd-dev/rechunk:v1.2.1"
-          ref: "localhost/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
+          ref: ${{ steps.build.outputs.image-id }}
           prev-ref: ${{ inputs.previous-image }}
           skip_compression: true
           version: ${{ steps.check.outputs.version }}
@@ -212,8 +209,11 @@ jobs:
         env:
           IMAGE_TAG: ${{ env.WORKING_TAG }}-${{ matrix.platform }}
         run: |
-          echo "# Changelog" >> $GITHUB_STEP_SUMMARY
-          cat ${{ steps.rechunk.outputs.changelog }} >> $GITHUB_STEP_SUMMARY
+          ls -l ${{ steps.rechunk.outputs.changelog }}
+          if [ -s ${{ steps.rechunk.outputs.changelog }} ]; then
+            echo "# Changelog" >> $GITHUB_STEP_SUMMARY
+            cat ${{ steps.rechunk.outputs.changelog }} >> $GITHUB_STEP_SUMMARY
+          fi
 
           IMAGE=$(podman pull ${{ steps.rechunk.outputs.ref }})
           sudo rm -rf ${{ steps.rechunk.outputs.location }}
