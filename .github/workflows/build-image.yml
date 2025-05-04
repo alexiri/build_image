@@ -152,9 +152,6 @@ jobs:
             -f ${{ env.CONTAINERFILE }} \
             .
 
-          echo -n "image-id="
-          cat /tmp/image-id
-
           echo "image-id=$(cat /tmp/image-id)" >> $GITHUB_OUTPUT
           echo "date=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)" >> $GITHUB_OUTPUT
           sudo podman image inspect ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} | jq .
@@ -226,7 +223,7 @@ jobs:
           INSPECT=$(podman image inspect $IMAGE)
           echo "image=$IMAGE" >> $GITHUB_OUTPUT
           echo "digest=$(echo "$INSPECT" | jq -r '.[0].Digest')" >> $GITHUB_OUTPUT
-          echo "image-id=$(echo "$INSPECT" | jq -r '.[0].Id')" >> $GITHUB_OUTPUT
+          echo "image-id=$(echo "$INSPECT" | jq -r '("sha256:" + .[0].Id)'" >> $GITHUB_OUTPUT
           echo "redhat-id=$(echo "$INSPECT" | jq -r '.[0].Labels["redhat.id"]')" >> $GITHUB_OUTPUT
           echo "redhat-version-id=$(echo "$INSPECT" | jq -r '.[0].Labels["redhat.version-id"]')" >> $GITHUB_OUTPUT
           echo "version=$(echo "$INSPECT" | jq -r '.[0].Labels["org.opencontainers.image.version"]')" >> $GITHUB_OUTPUT
@@ -236,7 +233,7 @@ jobs:
         uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
         id: metadata
         with:
-          images: ${{ steps.load.outputs.image }}@${{ steps.load.outputs.digest }}
+          images: ${{ steps.load.outputs.image-id }}
           labels: |
             containers.bootc=1
             org.opencontainers.image.created=${{ steps.build.outputs.date }}
@@ -256,7 +253,7 @@ jobs:
           IMAGE_REF: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_PATH }}/${{ env.IMAGE_NAME }}
         run: |
           set -x
-          podman tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.IMAGE_REF }}:${{ env.IMAGE_TAG }}
+          podman tag ${{ steps.load.outputs.image-id }} ${{ env.IMAGE_REF }}:${{ env.IMAGE_TAG }}
           for i in {1..3}; do
             podman push --digestfile=/tmp/digestfile ${{ env.IMAGE_REF }}:${{ env.IMAGE_TAG }} && break || sleep $((5 * i));
           done
