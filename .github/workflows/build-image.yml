@@ -70,7 +70,7 @@ on:
         required: true
       SIGNING_SECRET:
         description: "The private key used to sign the image"
-        required: true
+        required: false
 
 env:
   IMAGE_NAME: ${{ inputs.image-name }}
@@ -118,6 +118,9 @@ jobs:
     outputs:
       image-ref: ${{ steps.push.outputs.image-ref }}
       digest: ${{ steps.push.outputs.digest }}
+
+    env:
+      SIGNING_ENABLED: ${{ secrets.SIGNING_SECRET != '' }}
 
     steps:
       - name: Login to Container Registry
@@ -266,17 +269,17 @@ jobs:
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@3454372f43399081ed03b604cb2d021dabca52bb # v3.8.2
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && ${{ env.SIGNING_ENABLED }}
 
       - name: Sign Image
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && ${{ env.SIGNING_ENABLED }}
         env:
           COSIGN_EXPERIMENTAL: false
           COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
         run: cosign sign -y --key env://COSIGN_PRIVATE_KEY ${{ steps.push.outputs.image-ref }}@${{ steps.push.outputs.digest }}
 
       - name: Add SBOM Attestation
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && ${{ env.SIGNING_ENABLED }}
         env:
           IMAGE: ${{ steps.push.outputs.image-ref }}
           DIGEST: ${{ steps.push.outputs.digest }}
