@@ -267,17 +267,17 @@ jobs:
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@3454372f43399081ed03b604cb2d021dabca52bb # v3.8.2
-        if: github.event_name != 'pull_request' && ${{ env.SIGNING_ENABLED }}
+        if: github.event_name != 'pull_request' && ${{ env.SIGNING_ENABLED }} == 'true'
 
       - name: Sign Image
-        if: github.event_name != 'pull_request' && ${{ env.SIGNING_ENABLED }}
+        if: github.event_name != 'pull_request' && ${{ env.SIGNING_ENABLED }} == 'true'
         env:
           COSIGN_EXPERIMENTAL: false
           COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
         run: cosign sign -y --key env://COSIGN_PRIVATE_KEY ${{ steps.push.outputs.image-ref }}@${{ steps.push.outputs.digest }}
 
       - name: Add SBOM Attestation
-        if: github.event_name != 'pull_request' && ${{ env.SIGNING_ENABLED }}
+        if: github.event_name != 'pull_request' && ${{ env.SIGNING_ENABLED }} == 'true'
         env:
           IMAGE: ${{ steps.push.outputs.image-ref }}
           DIGEST: ${{ steps.push.outputs.digest }}
@@ -488,17 +488,17 @@ jobs:
       id-token: write
     steps:
       - name: Login to Container Registry
-        if: ${{ env.SIGNING_ENABLED }}
+        if: ${{ env.SIGNING_ENABLED }} == 'true'
         run: |
           echo ${{ secrets.REGISTRY_TOKEN }} | podman login -u ${{ inputs.REGISTRY_USER }} --password-stdin ${{ env.IMAGE_REGISTRY }}
           echo ${{ secrets.REGISTRY_TOKEN }} | docker login -u ${{ inputs.REGISTRY_USER }} --password-stdin ${{ env.IMAGE_REGISTRY }}
 
       - name: Install Cosign
-        if: ${{ env.SIGNING_ENABLED }}
+        if: ${{ env.SIGNING_ENABLED }} == 'true'
         uses: sigstore/cosign-installer@3454372f43399081ed03b604cb2d021dabca52bb # v3.8.2
 
       - name: Sign Manifest
-        if: ${{ env.SIGNING_ENABLED }}
+        if: ${{ env.SIGNING_ENABLED }} == 'true'
         env:
           DIGEST: ${{ needs.manifest.outputs.digest }}
           IMAGE: ${{ needs.manifest.outputs.image }}
