@@ -70,7 +70,7 @@ jobs:
         id: build
         uses: ublue-os/bootc-image-builder-action@main
         with:
-          image: ${{ inputs.inputs }}
+          image: ${{ inputs.image }}
           type: iso
           use-librepo: ${{ inputs.use_librepo }}
           config-file: ${{ inputs.config-file }}
