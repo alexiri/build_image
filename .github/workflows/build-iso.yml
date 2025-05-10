@@ -64,7 +64,7 @@ jobs:
       - name: Prepare ISO configuration
         shell: bash
         run: |
-          sed -i 's/<UPDATE_IMAGE_REF>/${{ inputs.update_origin_ref }}/g' ${{ inputs.config-file }}
+          sed -i 's#<UPDATE_IMAGE_REF>#${{ inputs.update_origin_ref }}#g' ${{ inputs.config-file }}
 
       - name: Build ISO
         id: build
