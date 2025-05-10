@@ -65,6 +65,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's#<UPDATE_IMAGE_REF>#${{ inputs.update_origin_ref }}#g' ${{ inputs.config-file }}
+          cat ${{ inputs.config-file }}
 
       - name: Build ISO
         id: build
