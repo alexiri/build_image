@@ -139,10 +139,11 @@ jobs:
         id: rename
         env:
           IMAGE_NAME: ${{ inputs.image-name }}-${{ matrix.platform }}-live.iso
+          OUTPUT_PATH: output-${{ matrix.platform }}
         run: |
           set -x
-          mkdir -p output
-          OUTPUT_DIRECTORY="$(realpath output)"
+          mkdir -p ${{ env.OUTPUT_PATH }}
+          OUTPUT_DIRECTORY="$(realpath ${{ env.OUTPUT_PATH }})"
 
           mv ${{ steps.build.outputs.ISO_PATH }} "${OUTPUT_DIRECTORY}/${IMAGE_NAME}"
           mv ${{ steps.build.outputs.CHECKSUM_PATH }} "${OUTPUT_DIRECTORY}/${IMAGE_NAME}-CHECKSUM"
@@ -153,6 +154,7 @@ jobs:
         id: upload
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
+          name: ${{ inputs.image-name }}-${{ matrix.platform }}-live
           path: ${{ steps.rename.outputs.output_directory }}
           if-no-files-found: error
           compression-level: 0
