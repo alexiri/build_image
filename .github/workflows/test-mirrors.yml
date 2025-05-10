@@ -10,11 +10,13 @@ jobs:
               shell: bash
               run: |
                 set -x
+                set +e
                 mirror_list=$(curl -s https://kitten.mirrors.almalinux.org/mirrorlist/10-kitten/baseos | sort)
 
                 while IFS= read -r url; do
                     fixed_url="${url//\$basearch/x86_64}"
                     repomd_url="${fixed_url%/}/repodata/repomd.xml"
+                    echo "Repo: $repomd_url"
 
                     xml_content=$(curl -s "$repomd_url")
                     timestamp=$(echo "$xml_content" | grep -oP '(?<=<revision>)[0-9]+(?=</revision>)')
@@ -25,7 +27,6 @@ jobs:
                         last_modified="Unknown"
                     fi
 
-                    echo "Repo: $repomd_url"
                     echo "Last Modified: $last_modified"
                     echo "--------------------------------------"
                 done <<< "$mirror_list"
