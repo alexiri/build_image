@@ -94,8 +94,8 @@ jobs:
           mkdir -p ${{ env.OUTPUT_PATH }}
           OUTPUT_DIRECTORY="$(realpath ${{ env.OUTPUT_PATH }})"
 
-          mv ${{ steps.build.outputs.path }} "${OUTPUT_DIRECTORY}/${IMAGE_NAME}"
-          mv ${{ steps.build.outputs.checksum_path }} "${OUTPUT_DIRECTORY}/${IMAGE_NAME}-CHECKSUM"
+          mv ${{ steps.build.outputs.output-path }} "${OUTPUT_DIRECTORY}/${IMAGE_NAME}"
+          mv ${{ steps.build.outputs.checksum-path }} "${OUTPUT_DIRECTORY}/${IMAGE_NAME}-CHECKSUM"
 
           echo "output_directory=$OUTPUT_DIRECTORY" >> "${GITHUB_OUTPUT}"
 
