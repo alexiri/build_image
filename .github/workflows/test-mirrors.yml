@@ -9,7 +9,6 @@ jobs:
             - name: Test
               shell: bash
               run: |
-                set -x
                 set +e
                 mirror_list=$(curl -s https://kitten.mirrors.almalinux.org/mirrorlist/10-kitten/baseos | sort)
 
@@ -24,7 +23,7 @@ jobs:
                     if [ -n "$timestamp" ]; then
                         last_modified=$(date -d @"$timestamp")
                     else
-                        last_modified="Unknown"
+                        last_modified="Unknown - not a valid repo"
                     fi
 
                     echo "Last Modified: $last_modified"
