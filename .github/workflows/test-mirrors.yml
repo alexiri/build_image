@@ -9,6 +9,7 @@ jobs:
             - name: Test
               shell: bash
               run: |
+                set -x
                 mirror_list=$(curl -s https://kitten.mirrors.almalinux.org/mirrorlist/10-kitten/baseos | sort)
 
                 while IFS= read -r url; do
