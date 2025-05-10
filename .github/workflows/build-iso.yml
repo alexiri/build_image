@@ -157,3 +157,8 @@ jobs:
           if-no-files-found: error
           compression-level: 0
           overwrite: true
+
+      - name: Summary
+        run: |
+          echo "Artifact URL: ${{ steps.upload.outputs.artifact-url }}" >> $GITHUB_STEP_SUMMARY
+          echo "Digest: ${{ steps.upload.outputs.artifact-digest }}" >> $GITHUB_STEP_SUMMARY
